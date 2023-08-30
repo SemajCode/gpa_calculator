@@ -220,10 +220,6 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
     return Scaffold(
       drawer: const MainDrawer(),
       appBar: AppBar(
-        // leading: TextButton(
-        //   onPressed: () {},
-        //   child: const Icon(Icons.menu, color: Colors.white),
-        // ),
         elevation: 0,
         backgroundColor: const Color.fromARGB(255, 55, 55, 59),
         title: StyleText(
