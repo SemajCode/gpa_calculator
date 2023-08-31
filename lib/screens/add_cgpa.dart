@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gpa_calculator/providers/user_cgpas.dart';
 import 'package:gpa_calculator/model/course.dart';
-import 'package:gpa_calculator/model/gpa.dart';
+// import 'package:gpa_calculator/model/gpa.dart';
 import 'package:gpa_calculator/screens/result.dart';
 import 'package:gpa_calculator/widgets/add_card.dart';
 import 'package:gpa_calculator/widgets/add_gpa_modal.dart';
@@ -10,18 +12,18 @@ import 'package:gpa_calculator/widgets/main_drawer.dart';
 import 'package:gpa_calculator/widgets/main_stack.dart';
 import 'package:gpa_calculator/widgets/style_button.dart';
 import 'package:gpa_calculator/widgets/style_text.dart';
-import 'package:gpa_calculator/data/cgpa_data.dart';
+// import 'package:gpa_calculator/data/cgpa_data.dart';
 
-class AddCgpaScreen extends StatefulWidget {
+class AddCgpaScreen extends ConsumerStatefulWidget {
   const AddCgpaScreen({super.key, required this.currentCgpaIndex});
 
   final int currentCgpaIndex;
 
   @override
-  State<AddCgpaScreen> createState() => _AddCgpaScreenState();
+  ConsumerState<AddCgpaScreen> createState() => _AddCgpaScreenState();
 }
 
-class _AddCgpaScreenState extends State<AddCgpaScreen> {
+class _AddCgpaScreenState extends ConsumerState<AddCgpaScreen> {
   late final cgpaIndex = widget.currentCgpaIndex;
 
   var currentGpaIndex = 0;
@@ -29,6 +31,7 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
   String session = '';
 
   void nextGpa() {
+    final cgpaList = ref.read(userCgpaProvider);
     switch (currentGpaIndex + 1) {
       case 0:
         semester = 'First Semester';
@@ -91,16 +94,18 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
         break;
     }
 
-    if (dummyData[cgpaIndex].gpa.length > currentGpaIndex + 1) {
+    if (cgpaList[cgpaIndex].gpa.length > currentGpaIndex + 1) {
       setState(() {
         currentGpaIndex++;
       });
       return;
     } else {
       setState(() {
-        dummyData[cgpaIndex]
-            .gpa
-            .add(Gpa(courses: [], semester: semester, session: session));
+        ref.read(userCgpaProvider.notifier).createGpa(
+              cgpaIndex,
+              semester,
+              session,
+            );
         currentGpaIndex++;
       });
     }
@@ -122,7 +127,9 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
 
   void _addCourse(Course course) {
     setState(() {
-      dummyData[cgpaIndex].gpa[currentGpaIndex].courses.add(course);
+      ref
+          .read(userCgpaProvider.notifier)
+          .addCourse(cgpaIndex, currentGpaIndex, course);
     });
   }
 
@@ -146,15 +153,17 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
 
   void _editCourse(Course course, index) {
     setState(() {
-      dummyData[cgpaIndex].gpa[currentGpaIndex].courses[index] = course;
+      ref
+          .read(userCgpaProvider.notifier)
+          .editCourse(course, index, cgpaIndex, currentGpaIndex);
     });
   }
 
   void _removeCourse(Course course) {
-    final courseIndex =
-        dummyData[cgpaIndex].gpa[currentGpaIndex].courses.indexOf(course);
     setState(() {
-      dummyData[cgpaIndex].gpa[currentGpaIndex].courses.remove(course);
+      ref
+          .read(userCgpaProvider.notifier)
+          .removeCourse(course, cgpaIndex, currentGpaIndex);
     });
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -165,10 +174,9 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
             label: 'undo',
             onPressed: () {
               setState(() {
-                dummyData[cgpaIndex]
-                    .gpa[currentGpaIndex]
-                    .courses
-                    .insert(courseIndex, course);
+                ref
+                    .read(userCgpaProvider.notifier)
+                    .insertCourse(course, cgpaIndex, currentGpaIndex);
               });
             }),
       ),
@@ -177,7 +185,8 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentGpa = dummyData[cgpaIndex].gpa[currentGpaIndex];
+    final cgpaList = ref.watch(userCgpaProvider);
+    final currentGpa = cgpaList[cgpaIndex].gpa[currentGpaIndex];
     final currentCoursesList = currentGpa.courses;
 
     Widget content = const Center(
@@ -285,7 +294,7 @@ class _AddCgpaScreenState extends State<AddCgpaScreen> {
                               isEnable: true,
                               onPressed: () {
                                 num noOfCourse = 0;
-                                final gpaList = dummyData[cgpaIndex].gpa;
+                                final gpaList = cgpaList[cgpaIndex].gpa;
                                 for (var element in gpaList) {
                                   noOfCourse += element.courses.length;
                                 }

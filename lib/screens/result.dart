@@ -1,46 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gpa_calculator/providers/user_cgpas.dart';
 import 'package:gpa_calculator/widgets/cgpa_indicator.dart';
 import 'package:gpa_calculator/widgets/main_stack.dart';
 import 'package:gpa_calculator/widgets/result_list.dart';
 import 'package:gpa_calculator/widgets/save_course_modal.dart';
 import 'package:gpa_calculator/widgets/style_button.dart';
 import 'package:gpa_calculator/widgets/style_text.dart';
-import 'package:gpa_calculator/data/cgpa_data.dart';
+// import 'package:gpa_calculator/data/cgpa_data.dart';
 
-class ResultScreen extends StatefulWidget {
+class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key, required this.cgpaIndex});
 
   final int cgpaIndex;
 
   @override
-  State<ResultScreen> createState() => _ResultScreenState();
+  ConsumerState<ResultScreen> createState() => _ResultScreenState();
 }
 
-class _ResultScreenState extends State<ResultScreen> {
+class _ResultScreenState extends ConsumerState<ResultScreen> {
   late final int cgpaIndex = widget.cgpaIndex;
 
   num _getData(cgpaIndex, data) {
-    num value = 0;
-    final gpaList = dummyData[cgpaIndex].gpa;
-    for (var element in gpaList) {
-      int coursesLength = element.courses.length;
-      int i = 0;
-      while (i < coursesLength) {
-        if (data == 'point') {
-          value += element.courses[i].point;
-        } else {
-          value += element.courses[i].unit;
-        }
-        ++i;
-      }
-    }
+    int value = ref.read(userCgpaProvider.notifier).getData(cgpaIndex, data);
     return value;
   }
 
   var currentGpaIndex = 0;
 
   void nextGpa() {
-    if (dummyData[cgpaIndex].gpa.length > currentGpaIndex + 1) {
+    final cgpaList = ref.read(userCgpaProvider);
+    if (cgpaList[cgpaIndex].gpa.length > currentGpaIndex + 1) {
       setState(() {
         currentGpaIndex++;
       });
@@ -139,6 +129,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cgpaList = ref.read(userCgpaProvider);
     final num totalPoint = _getData(cgpaIndex, 'point');
     final num totalunit = _getData(cgpaIndex, 'unit');
     final double cgpa = totalPoint / totalunit;
@@ -226,7 +217,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     session: _getSession(),
                     currentGpaIndex: currentGpaIndex,
                     cgpaIndex: widget.cgpaIndex,
-                    gpaList: dummyData[widget.cgpaIndex].gpa,
+                    gpaList: cgpaList[widget.cgpaIndex].gpa,
                   ),
                 ),
               ),
@@ -261,7 +252,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             context: context,
                             builder: (context) => SaveCourseModal(
                               cgpaIndex: cgpaIndex,
-                              cgpaList: dummyData,
+                              cgpaList: cgpaList,
                             ),
                           );
                         },
@@ -274,7 +265,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     const SizedBox(width: 13),
                     Expanded(
                       child: StyleButton(
-                        isEnable: dummyData[cgpaIndex].gpa.length !=
+                        isEnable: cgpaList[cgpaIndex].gpa.length !=
                             currentGpaIndex + 1,
                         buttonType: 'main',
                         onPressed: nextGpa,

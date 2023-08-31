@@ -1,93 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:gpa_calculator/model/cgpas.dart';
-import 'package:gpa_calculator/model/gpa.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:gpa_calculator/model/cgpas.dart';
+// import 'package:gpa_calculator/model/gpa.dart';
+import 'package:gpa_calculator/providers/user_cgpas.dart';
 import 'package:gpa_calculator/screens/add_cgpa.dart';
 import 'package:gpa_calculator/widgets/cgpa_card.dart';
 import 'package:gpa_calculator/widgets/main_drawer.dart';
 import 'package:gpa_calculator/widgets/main_stack.dart';
 import 'package:gpa_calculator/widgets/style_button.dart';
 import 'package:gpa_calculator/widgets/style_text.dart';
-import 'package:gpa_calculator/data/cgpa_data.dart';
+// import 'package:gpa_calculator/data/cgpa_data.dart';
 
-class CgpaScreen extends StatefulWidget {
+class CgpaScreen extends ConsumerStatefulWidget {
   const CgpaScreen({super.key});
 
   @override
-  State<CgpaScreen> createState() => _CgpaScreenState();
+  ConsumerState<CgpaScreen> createState() => _CgpaScreenState();
 }
 
-class _CgpaScreenState extends State<CgpaScreen> {
+class _CgpaScreenState extends ConsumerState<CgpaScreen> {
   int _getNoOfCourses(cgpaIndex) {
-    int noOfCourse = 0;
-    final gpaList = dummyData[cgpaIndex].gpa;
-    for (var element in gpaList) {
-      noOfCourse += element.courses.length;
-    }
+    int noOfCourse =
+        ref.read(userCgpaProvider.notifier).getNoOfCourses(cgpaIndex);
 
-    if (noOfCourse == 0) {
-      dummyData.remove(dummyData[cgpaIndex]);
-    }
     return noOfCourse;
   }
 
   int _getData(cgpaIndex, data) {
-    int value = 0;
-    final gpaList = dummyData[cgpaIndex].gpa;
-    for (var element in gpaList) {
-      int coursesLength = element.courses.length;
-      int i = 0;
-      while (i < coursesLength) {
-        if (data == 'point') {
-          value += element.courses[i].point;
-        } else {
-          value += element.courses[i].unit;
-        }
-        ++i;
-      }
-    }
+    int value = ref.read(userCgpaProvider.notifier).getData(cgpaIndex, data);
     return value;
   }
 
   int _getNoOfSessions(cgpaIndex) {
-    int noOfSessions = 0;
-    final gpaListLength = dummyData[cgpaIndex].gpa.length;
-    for (var i = 0; i < gpaListLength; i++) {
-      if (i <= 1) {
-        noOfSessions = 1;
-      } else if (i <= 3) {
-        noOfSessions = 2;
-      } else if (i <= 5) {
-        noOfSessions = 3;
-      } else if (i <= 7) {
-        noOfSessions = 4;
-      } else if (i <= 9) {
-        noOfSessions = 5;
-      } else if (i <= 11) {
-        noOfSessions = 6;
-      } else if (i <= 3) {
-        noOfSessions = 7;
-      } else {
-        noOfSessions = 8;
-      }
-    }
-
+    int noOfSessions =
+        ref.read(userCgpaProvider.notifier).getNoOfSessions(cgpaIndex);
     return noOfSessions;
   }
 
   void _addCgpa() {
-    dummyData.add(
-      Cgpas(
-        name: 'CGPA${dummyData.length + 1}',
-        gpa: [
-          Gpa(
-            courses: [],
-            semester: 'First semester',
-            session: 'Session 1',
-          ),
-        ],
-      ),
-    );
-    final int addedCgpaIndex = dummyData.length - 1;
+    ref.read(userCgpaProvider.notifier).addCgpa();
+    final int addedCgpaIndex = ref.read(userCgpaProvider).length - 1;
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => AddCgpaScreen(currentCgpaIndex: addedCgpaIndex),
@@ -97,6 +50,7 @@ class _CgpaScreenState extends State<CgpaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cgpaList = ref.watch(userCgpaProvider);
     return Scaffold(
       drawer: const MainDrawer(),
       appBar: AppBar(
@@ -114,17 +68,17 @@ class _CgpaScreenState extends State<CgpaScreen> {
           child: Padding(
             padding: const EdgeInsets.all(10),
             child: ListView.builder(
-              itemCount: dummyData.length,
+              itemCount: cgpaList.length,
               itemBuilder: (context, index) => CgpaCard(
                 cgpaIndex: index,
-                cgpaName: dummyData[index].name,
+                cgpaName: cgpaList[index].name,
                 noOfSessions: _getNoOfSessions(index),
                 totalPoint: _getData(index, 'point'),
                 totalUnit: _getData(index, 'unit'),
                 noOfCourses: _getNoOfCourses(index),
                 onDeleteCgpa: (int cIndex) {
                   setState(() {
-                    dummyData.removeAt(index);
+                    cgpaList.removeAt(index);
                   });
                   Navigator.pop(context);
                 },
