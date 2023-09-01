@@ -1,11 +1,7 @@
-// import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpa_calculator/model/cgpas.dart';
 import 'package:gpa_calculator/model/course.dart';
 import 'package:gpa_calculator/model/gpa.dart';
-// import 'package:flutter/material.dart';
-// import 'package:gpa_calculator/screens/add_cgpa.dart';
 
 class UserCgpaNotifier extends StateNotifier<List<Cgpas>> {
   UserCgpaNotifier() : super(const []);
