@@ -1,4 +1,5 @@
 // import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpa_calculator/model/cgpas.dart';
 import 'package:gpa_calculator/model/course.dart';
@@ -9,17 +10,8 @@ import 'package:gpa_calculator/model/gpa.dart';
 class UserCgpaNotifier extends StateNotifier<List<Cgpas>> {
   UserCgpaNotifier() : super(const []);
 
-  void addCgpa() {
-    final newCgpa = Cgpas(
-      name: 'CGPA${state.length + 1}',
-      gpa: [
-        Gpa(
-          courses: [],
-          semester: 'First semester',
-          session: 'Session 1',
-        ),
-      ],
-    );
+  void addCgpa(Cgpas cgpa) {
+    final newCgpa = cgpa;
     state = [newCgpa, ...state];
   }
 
@@ -105,6 +97,11 @@ class UserCgpaNotifier extends StateNotifier<List<Cgpas>> {
 
   void editCourse(Course course, index, cgpaIndex, currentGpaIndex) {
     state[cgpaIndex].gpa[currentGpaIndex].courses[index] = course;
+  }
+
+  List<Cgpas> printState() {
+    final list = state;
+    return list;
   }
 }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gpa_calculator/model/cgpas.dart';
+import 'package:gpa_calculator/model/gpa.dart';
 // import 'package:gpa_calculator/model/cgpas.dart';
 // import 'package:gpa_calculator/model/gpa.dart';
 import 'package:gpa_calculator/providers/user_cgpas.dart';
@@ -38,8 +40,20 @@ class _CgpaScreenState extends ConsumerState<CgpaScreen> {
   }
 
   void _addCgpa() {
-    ref.read(userCgpaProvider.notifier).addCgpa();
-    final int addedCgpaIndex = ref.read(userCgpaProvider).length - 1;
+    final cgpaList = ref.read(userCgpaProvider);
+    ref.read(userCgpaProvider.notifier).addCgpa(
+          Cgpas(
+            name: 'CGPA${cgpaList.length + 1}',
+            gpa: [
+              Gpa(
+                courses: [],
+                semester: 'First semester',
+                session: 'Session 1',
+              ),
+            ],
+          ),
+        );
+    final int addedCgpaIndex = cgpaList.length;
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -50,7 +64,7 @@ class _CgpaScreenState extends ConsumerState<CgpaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cgpaList = ref.watch(userCgpaProvider);
+    final cgpaList = ref.read(userCgpaProvider);
     return Scaffold(
       drawer: const MainDrawer(),
       appBar: AppBar(

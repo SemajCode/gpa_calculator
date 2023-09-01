@@ -126,6 +126,7 @@ class _AddCgpaScreenState extends ConsumerState<AddCgpaScreen> {
   }
 
   void _addCourse(Course course) {
+    ref.read(userCgpaProvider.notifier);
     setState(() {
       ref
           .read(userCgpaProvider.notifier)
@@ -185,7 +186,7 @@ class _AddCgpaScreenState extends ConsumerState<AddCgpaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cgpaList = ref.watch(userCgpaProvider);
+    final cgpaList = ref.read(userCgpaProvider);
     final currentGpa = cgpaList[cgpaIndex].gpa[currentGpaIndex];
     final currentCoursesList = currentGpa.courses;
 
